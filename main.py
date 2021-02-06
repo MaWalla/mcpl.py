@@ -71,9 +71,8 @@ class MinecraftPlayerLocation:
             try:
                 data = {player: info for player, info in self.parse_player_locations()}
 
-                if data:
-                    message = json.dumps(data)
-                    await websocket.send(message)
+                message = json.dumps(data)
+                await websocket.send(message)
 
                 sleep(self.refresh_limit)
                 self.mcrcon.connect()
