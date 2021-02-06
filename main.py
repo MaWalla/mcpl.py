@@ -11,8 +11,9 @@ from time import sleep
 class MinecraftPlayerLocation:
     rcon_connected = False
 
-    def __init__(self, mcrcon_host, mcrcon_password, websocket_port):
-        self.mcrcon = MCRcon(mcrcon_host, mcrcon_password)
+    def __init__(self, mcrcon_host, mcrcon_password, mcrcon_port, websocket_port, fps):
+        self.refresh_limit = 1 / int(fps)
+        self.mcrcon = MCRcon(mcrcon_host, mcrcon_password, mcrcon_port)
         self.online_players = []
 
         self.refresh_rcon()
@@ -74,6 +75,7 @@ class MinecraftPlayerLocation:
                     message = json.dumps(data)
                     await websocket.send(message)
 
+                sleep(self.refresh_limit)
                 self.mcrcon.connect()
             except (ConnectionRefusedError, BrokenPipeError):
                 self.refresh_rcon()
@@ -83,13 +85,16 @@ class MinecraftPlayerLocation:
 
 rcon_host = os.environ.get('RCON_HOST')
 rcon_password = os.environ.get('RCON_PASSWORD')
+rcon_port = os.environ.get('RCON_PORT', 25575)
 websocket_port = os.environ.get('WS_PORT')
+fps = os.environ.get('REFRESH_RATE', 10)
 
 if not rcon_host or not rcon_password or not websocket_port:
     print('one or more env variables missing!', file=sys.stderr)
     print('please make sure that RCON_HOST, RCON_PASSWORD and WS_PORT are set!', file=sys.stderr)
+    print('Note: RCON_PORT and REFREH_RATE can also be set if necessary.', file=sys.stderr)
     exit(1)
 
 
-mclp = MinecraftPlayerLocation(rcon_host, rcon_password, websocket_port)
+mclp = MinecraftPlayerLocation(rcon_host, rcon_password, rcon_port, websocket_port, fps)
 mclp.mcrcon.disconnect()
