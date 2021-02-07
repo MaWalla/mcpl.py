@@ -114,12 +114,8 @@ The whole thing ain't perfect yet. There are 3 things that need to be done in th
   - Better error handling for nginx errors
     - most notably there is a HTTP 502 response issue that causes lots of loop cycles, bombing the RAM of people with the tab open when the server script isn't running (so make sure that mcpl.py is running when you serve the map or users are gonna have a really bad time)
     - also it should try to reconnect on HTTP 504 responses, otherwise the user has to reload the page for it to work again
-  - Support for different nothdirections
+  - Support for different northdirections
     - if the map has different north directions than `upper-left`, player positions will be off cause the client assumes it facing always there
   - Bukkit/Spigot/PaperMC multiple worlds support
     - most notably the proper handling for overworld/nether/end
     - while there seems to be support for it, this refers to the "default all-in-one world package"
-    
-Also there is one issue I haven't yet wrapped my head around: **Support for Firefox/mobile browsers**
-  - for some reason Firefox won't connect to the websocket. Chromium-based stuff does however.
-  - on mobile the issue is probably the same, I didn't debug that one closer yet though.

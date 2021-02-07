@@ -67,19 +67,18 @@ class MinecraftPlayerLocation:
             yield player, {'name': player, 'x': x, 'y': y, 'z': z, 'dimension': cleaned_dimension}
 
     async def send_data(self, websocket, path):
-        while True:
-            try:
-                data = {player: info for player, info in self.parse_player_locations()}
+        try:
+            data = {player: info for player, info in self.parse_player_locations()}
 
-                message = json.dumps(data)
-                await websocket.send(message)
+            message = json.dumps(data)
+            await websocket.send(message)
 
-                sleep(self.refresh_limit)
-                self.mcrcon.connect()
-            except (ConnectionRefusedError, BrokenPipeError):
-                self.refresh_rcon()
-            except ConnectionResetError:
-                pass
+            sleep(self.refresh_limit)
+            self.mcrcon.connect()
+        except (ConnectionRefusedError, BrokenPipeError):
+            self.refresh_rcon()
+        except ConnectionResetError:
+            pass
 
 
 rcon_host = os.environ.get('RCON_HOST')
