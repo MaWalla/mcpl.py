@@ -42,8 +42,8 @@ After this run `docker-compose up` in the directory containing the .yml
 
 ### "natively"
 
-(Note that I built it with python 3.9, older versions should work too though.)
-running it on your machine directly can be done too but needs some pip dependencies (websockets, mcrcon) first:
+(Note that I built it with python 3.9, older/newer versions should work too though.)
+running it on your machine directly can be done too but needs some pip dependencies first:
 I recommend doing this in a venv btw.
 
 `pip3 install -r requirements.txt`
@@ -54,48 +54,33 @@ After this you need to set the following env variables (those are mandatory, but
 `export RCON_PASSWORD=mcrcon_password`
 `export WS_PORT=ws_number`
 
-Then it can be launched by just using `python3 main.py`
+Then it can be launched by using `gunicorn main:app -k flask_sockets.worker -w 1 --threads 1 -b 0.0.0.0:25576`
 
 ### additional env variables
+
 next to the env variables mentioned above, there are also a few more:
   - `RCON_PORT` the RCON port. Defaults to 25575.
   - `REFRESH_RATE` The amount of WebSocket messages sent to clients per second. Defaults to 10. Lowering it reduces bandwidth usage but makes movements on the map choppier. Accordingly increasing it smoothes movements but increases bandwidth usage.
 
-### nginx reverse proxying
-
-Serving the WebSocket can be made simple by reverse-proxying it.
-As opposed to exposing the WebSocket port directly, this is required when serving the Overviewer map via HTTPS, or just for the sake of it. 
-For that, edit your default site (usually `/etc/nginx/sites-enabled/default`) and add a new route with the following content:
-(note that the proxy_pass port needs to be changed to whatever you chose earlier)
-
-```
-location /mcplayerlocation {
-  proxy_set_header HOST $host;
-  proxy_set_header X-Real-IP $remote_addr;
-  proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
-  proxy_set_header X-Forwarded-Proto $scheme;
-  proxy_pass_request_headers on;
-  proxy_pass http://127.0.0.1:ws_port;
-  proxy_http_version 1.1;
-  proxy_set_header Upgrade $http_upgrade;
-  proxy_set_header Connection "Upgrade";
-}
-```
-
-Then reload nginx.
-
 ### integrating into Overviewer
 
 Finally a few modifications to Overviewer need to be done.
-you need to change into its directory. 
+
+#### modifying the source file
+you need to change into the Overviewer directory (containing the app, not the output). 
 In there you'll find `overviewer_core/data/web_assets/index.html`.
 Edit it and you'll find a bunch of `<script>` tags near the top. Add one more:
 
 `<script type="text/javascript" src="client.js"></script>`
 
+#### doing the changes after generating
+If you're using a script to automate other stuff anyway, you can also put this somewhere after the `overviewer.py` statement:
+
+`sed -i '14 i <script type="text/javascript" src="client.js"></script>' /path/to/generated/index.html`
+
 In case you're using HTTP instead of HTTPS for the Overviewer (or in general), you may wanna modify the `socketUrl:` line near the top in client.js and replace `wss://` with `ws:/`.
 
-You may also wanna modify that line when using another setup than my nginx one above.
+You may also wanna modify that line if your setup differs.
 
 Unfortunately, Overviewer bundles its javascript and trying to put the client.js stuff in there breaks everything, so we need to serve it manually.
 This can be done by chaining a cp behind the overviwer command, like so:

@@ -1,2 +1,4 @@
 mcrcon==0.6.0
-websockets==8.1
+Flask==1.1.2
+Flask-Sockets==0.2.1
+gunicorn==20.0.4

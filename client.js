@@ -1,5 +1,5 @@
 window.PlayerLocations = {
-  socketUrl: 'wss://' + window.location.hostname + '/mcplayerlocation',
+  socketUrl: 'wss://' + window.location.hostname + ':25577',
   debug: false,
   connection: {},
   playerMarkers: {},

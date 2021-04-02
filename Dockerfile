@@ -1,6 +1,5 @@
-FROM python:3.9-alpine
-RUN pip install websockets mcrcon
-RUN mkdir /app
-COPY main.py /app/main.py
+FROM python:3.9
+COPY . /app
+RUN cd /app && pip install -r requirements.txt
 
-ENTRYPOINT python /app/main.py
+ENTRYPOINT cd /app && gunicorn main:app -k flask_sockets.worker -w 1 --threads 1 -b 0.0.0.0:25576
